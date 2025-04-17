@@ -16,12 +16,9 @@ namespace RestaurantAPI.Models
         public string Email { get; set; }
 
         [Required]
-        public string Phone {  get; set; }
-
-        [Required]
         public string Address { get; set; }
 
-        public string Status { get; set; } = "pending";
+        public int Status { get; set; } = 1;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

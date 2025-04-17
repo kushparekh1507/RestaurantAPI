@@ -20,9 +20,9 @@ namespace RestaurantAPI.Models
 
         public virtual DbSet<User> Users { get; set; }
 
-        public virtual DbSet<Order> Orders { get; set; }
+        //public virtual DbSet<Order> Orders { get; set; }
 
-        public virtual DbSet<OrderItem> OrderItems { get; set; }
+        //public virtual DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -56,29 +56,49 @@ namespace RestaurantAPI.Models
                 .HasForeignKey(a => a.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Order>()
-                .HasOne(a=>a.Table)
-                .WithMany(o=>o.Orders)
-                .HasForeignKey(a => a.TableId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Order>()
+            //    .HasOne(a=>a.Table)
+            //    .WithMany(o=>o.Orders)
+            //    .HasForeignKey(a => a.TableId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Order>()
-                .HasOne(a=>a.CustomerUser)
-                .WithMany(o=>o.Orders)
-                .HasForeignKey(a => a.CustomerUserId)
-                .OnDelete(DeleteBehavior.SetNull);
+            //modelBuilder.Entity<Order>()
+            //    .HasOne(a=>a.CustomerUser)
+            //    .WithMany(o=>o.Orders)
+            //    .HasForeignKey(a => a.CustomerUserId)
+            //    .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<OrderItem>()
-                .HasOne(a=>a.Order)
-                .WithMany(o=> o.OrderItems)
-                .HasForeignKey(a => a.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<OrderItem>()
+            //    .HasOne(a=>a.Order)
+            //    .WithMany(o=> o.OrderItems)
+            //    .HasForeignKey(a => a.OrderId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<OrderItem>()
-                .HasOne(a=>a.MenuItem)
-                .WithMany(o => o.OrderItems)
-                .HasForeignKey(a => a.ItemId)
-                .OnDelete(DeleteBehavior.SetNull);
+            //modelBuilder.Entity<OrderItem>()
+            //    .HasOne(a=>a.MenuItem)
+            //    .WithMany(o => o.OrderItems)
+            //    .HasForeignKey(a => a.ItemId)
+            //    .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Role>().HasData(
+                    new Role { RoleId = 1, RoleName = "SuperAdmin" },
+                    new Role { RoleId = 2, RoleName = "CustomerAdmin" },
+                    new Role { RoleId = 3, RoleName = "CustomerUser" }
+                );
+
+            string hashedPassword = "$2a$11$OZsGF7lj/fx2uKwVlDKUCu6yugoftyY0FaSbLD8gIrH0DHrzonZ5q";
+
+            modelBuilder.Entity<User>().HasData(
+                    new User
+                    {
+                        UserId = 1,
+                        FullName = "Super Admin",
+                        Email = "kushparekh943@gmail.com",
+                        Password = hashedPassword,
+                        IsFirstLogin = false,
+                        RoleId = 1
+                    }
+                );
 
         }
     }

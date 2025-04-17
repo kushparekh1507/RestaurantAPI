@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RestaurantAPI.Models;
 
@@ -11,9 +12,11 @@ using RestaurantAPI.Models;
 namespace RestaurantAPI.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    partial class RestaurantContextModelSnapshot : ModelSnapshot
+    [Migration("20250329062225_UpdateRestaurantAndUserTable")]
+    partial class UpdateRestaurantAndUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,23 +128,6 @@ namespace RestaurantAPI.Migrations
                     b.HasKey("RoleId");
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = 1,
-                            RoleName = "SuperAdmin"
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            RoleName = "CustomerAdmin"
-                        },
-                        new
-                        {
-                            RoleId = 3,
-                            RoleName = "CustomerUser"
-                        });
                 });
 
             modelBuilder.Entity("RestaurantAPI.Models.Table", b =>
@@ -186,9 +172,6 @@ namespace RestaurantAPI.Migrations
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsFirstLogin")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -212,18 +195,6 @@ namespace RestaurantAPI.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            Email = "kushparekh943@gmail.com",
-                            FullName = "Super Admin",
-                            IsFirstLogin = false,
-                            Password = "$2a$11$OZsGF7lj/fx2uKwVlDKUCu6yugoftyY0FaSbLD8gIrH0DHrzonZ5q",
-                            RoleId = 1,
-                            Status = 0
-                        });
                 });
 
             modelBuilder.Entity("RestaurantAPI.Models.MenuCategory", b =>

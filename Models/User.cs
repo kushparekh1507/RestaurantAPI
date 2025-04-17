@@ -19,6 +19,10 @@ namespace RestaurantAPI.Models
 
         public string? UserType { get; set; }  // Only for Customer User
 
+        public int Status { get; set; }
+
+        public bool IsFirstLogin { get; set; } = true;
+
         [Required]
         public int RoleId { get; set; }
 
@@ -30,6 +34,6 @@ namespace RestaurantAPI.Models
         [ForeignKey("RestaurantId")]
         public Restaurant? Restaurant { get; set; }
 
-        public IEnumerable<Order> Orders { get; set; } = new List<Order>();
+        //public IEnumerable<Order> Orders { get; set; } = new List<Order>();
     }
 }
