@@ -16,6 +16,9 @@ namespace RestaurantAPI.Models
         public double Price { get; set; }
 
         [Required]
+        public double TotalPrice { get; set; }
+
+        [Required]
         public string Status {  get; set; }
 
         [Required]

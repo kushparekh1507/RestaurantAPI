@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace RestaurantAPI.Models
 {
@@ -29,6 +30,7 @@ namespace RestaurantAPI.Models
         [ForeignKey("CustomerUserId")]
         public User? CustomerUser { get; set; }
 
+        [JsonIgnore]
         public IEnumerable<OrderItem> OrderItems { get; set; }=new List<OrderItem>();
     }
 }

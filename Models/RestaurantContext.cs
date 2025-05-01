@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RestaurantAPI.Models;
 
 namespace RestaurantAPI.Models
 {
@@ -20,9 +21,9 @@ namespace RestaurantAPI.Models
 
         public virtual DbSet<User> Users { get; set; }
 
-        //public virtual DbSet<Order> Orders { get; set; }
+        public DbSet<RestaurantAPI.Models.Order> Order { get; set; } = default!;
+        public DbSet<RestaurantAPI.Models.OrderItem> OrderItem { get; set; } = default!;
 
-        //public virtual DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,55 +31,55 @@ namespace RestaurantAPI.Models
                 .HasOne(t => t.Restaurant)
                 .WithMany(r => r.Tables)
                 .HasForeignKey(t => t.RestaurantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<MenuCategory>()
                 .HasOne(m => m.Restaurant)
                 .WithMany(a => a.MenuCategories)
                 .HasForeignKey(m => m.RestaurantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<MenuItem>()
                 .HasOne(m => m.MenuCategory)
                 .WithMany(i => i.MenuItems)
                 .HasForeignKey(a => a.MenuCategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Restaurant)
                 .WithMany(u => u.Users)
                 .HasForeignKey(a => a.RestaurantId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<User>()
                 .HasOne(a => a.Role)
                 .WithMany(a => a.Users)
                 .HasForeignKey(a => a.RoleId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
-            //modelBuilder.Entity<Order>()
-            //    .HasOne(a=>a.Table)
-            //    .WithMany(o=>o.Orders)
-            //    .HasForeignKey(a => a.TableId)
-            //    .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Order>()
+                .HasOne(a => a.Table)
+                .WithMany(o => o.Orders)
+                .HasForeignKey(a => a.TableId)
+                .OnDelete(DeleteBehavior.NoAction);
 
-            //modelBuilder.Entity<Order>()
-            //    .HasOne(a=>a.CustomerUser)
-            //    .WithMany(o=>o.Orders)
-            //    .HasForeignKey(a => a.CustomerUserId)
-            //    .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Order>()
+                .HasOne(a => a.CustomerUser)
+                .WithMany(o => o.Orders)
+                .HasForeignKey(a => a.CustomerUserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
-            //modelBuilder.Entity<OrderItem>()
-            //    .HasOne(a=>a.Order)
-            //    .WithMany(o=> o.OrderItems)
-            //    .HasForeignKey(a => a.OrderId)
-            //    .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(a => a.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(a => a.OrderId)
+                .OnDelete(DeleteBehavior.NoAction);
 
-            //modelBuilder.Entity<OrderItem>()
-            //    .HasOne(a=>a.MenuItem)
-            //    .WithMany(o => o.OrderItems)
-            //    .HasForeignKey(a => a.ItemId)
-            //    .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(a => a.MenuItem)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(a => a.ItemId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Role>().HasData(
                     new Role { RoleId = 1, RoleName = "SuperAdmin" },
@@ -101,5 +102,6 @@ namespace RestaurantAPI.Models
                 );
 
         }
+        
     }
 }

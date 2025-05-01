@@ -34,6 +34,6 @@ namespace RestaurantAPI.Models
         [ForeignKey("RestaurantId")]
         public Restaurant? Restaurant { get; set; }
 
-        //public IEnumerable<Order> Orders { get; set; } = new List<Order>();
+        public IEnumerable<Order> Orders { get; set; } = new List<Order>();
     }
 }
