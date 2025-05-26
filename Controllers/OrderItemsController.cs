@@ -24,7 +24,7 @@ namespace RestaurantAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderItem>>> GetOrderItem()
         {
-            return await _context.OrderItem.ToListAsync();
+            return await _context.OrderItem.Include(oi=>oi.Order).ToListAsync();
         }
 
         // GET: api/OrderItems/5

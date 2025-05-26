@@ -117,6 +117,8 @@ namespace RestaurantAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRestaurant(int id)
         {
+            var users = _context.Users.Where(u => u.RestaurantId == id);
+            _context.Users.RemoveRange(users);
             var restaurant = await _context.Restaurant.FindAsync(id);
             if (restaurant == null)
             {
@@ -173,7 +175,8 @@ namespace RestaurantAPI.Controllers
                             RestaurantId = restaurant.RestaurantId,
                             RoleId = 2,
                             IsFirstLogin = true,
-                            Status = 1
+                            Status = 1,
+                            MobileNo = restaurant.MobileNo
                         };
 
                         _context.Users.Add(newUser);

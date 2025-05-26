@@ -30,7 +30,7 @@ namespace RestaurantAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MenuCategory>>> GetMenuCategories()
         {
-            return await _context.MenuCategories.ToListAsync();
+            return await _context.MenuCategories.Include(m=>m.Restaurant).Include(m=>m.MenuItems).ToListAsync();
         }
 
         // GET: api/MenuCategories/5
@@ -47,17 +47,40 @@ namespace RestaurantAPI.Controllers
             return menuCategory;
         }
 
+        [HttpGet("restaurant/{rid}")]
+        public async Task<ActionResult<IEnumerable<MenuCategory>>> GetCategoriesOfRestaurant(int rid)
+        {
+            //var restaurant = await _context.Restaurant.Include(r => r.MenuCategories).FirstOrDefaultAsync(r => r.RestaurantId == rid);
+            //if (restaurant == null)
+            //{
+            //    return NotFound();
+            //}
+
+            var categories = await _context.MenuCategories.Where(m => m.RestaurantId == rid).ToListAsync();
+
+            return categories;
+        }
+
         // PUT: api/MenuCategories/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMenuCategory(int id, MenuCategory menuCategory)
+        public async Task<IActionResult> PutMenuCategory(int id, MenuCategoryRequest updatedMenu)
         {
-            if (id != menuCategory.MenuCategoryId)
+            if (id != updatedMenu.MenuCategoryId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(menuCategory).State = EntityState.Modified;
+            MenuCategory existingMenu = await _context.MenuCategories.FindAsync(id);
+
+            if (existingMenu == null)
+            {
+                return NotFound();
+            }
+
+            existingMenu.CategoryName = updatedMenu.CategoryName;
+            existingMenu.Description = updatedMenu.Description;
+            existingMenu.RestaurantId = updatedMenu.RestaurantId;
 
             try
             {
@@ -85,12 +108,22 @@ namespace RestaurantAPI.Controllers
         {
             try
             {
-                var newCat = _mapper.Map<MenuCategoryRequest, MenuCategory>(request);
+                MenuCategory newCat = new MenuCategory
+                {
+                    CategoryName = request.CategoryName,
+                    Description = request.Description,
+                    RestaurantId = request.RestaurantId
+                };
 
                 _context.MenuCategories.Add(newCat);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetMenuCategory", new { id = newCat.MenuCategoryId }, newCat);
+                return Ok(new
+                {
+                    Message = "Menu Category Created Successfully",
+                    MenuCategory = newCat,
+                    success = true
+                });
             }
             catch (Exception ex)
             {
@@ -111,7 +144,12 @@ namespace RestaurantAPI.Controllers
             _context.MenuCategories.Remove(menuCategory);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new
+            {
+                Message = "Menu Category Deleted Successfully",
+                MenuCategoryId = menuCategory.MenuCategoryId,
+                success = true
+            });
         }
 
         private bool MenuCategoryExists(int id)

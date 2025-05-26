@@ -11,6 +11,8 @@ namespace RestaurantAPI.DTO
 
         public string Address { get; set; }
 
+        public string MobileNo { get; set; }
+
         public RestaurantStatus Status { get; set; } = RestaurantStatus.Pending;
     }
 }

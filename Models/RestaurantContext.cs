@@ -97,7 +97,8 @@ namespace RestaurantAPI.Models
                         Email = "kushparekh943@gmail.com",
                         Password = hashedPassword,
                         IsFirstLogin = false,
-                        RoleId = 1
+                        RoleId = 1,
+                        MobileNo= "7359292907"
                     }
                 );
 

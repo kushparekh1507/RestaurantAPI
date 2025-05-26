@@ -1,21 +1,27 @@
 using System.Security.Claims;
 using System.Text;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RestaurantAPI;
+using RestaurantAPI.DTO;
 using RestaurantAPI.Models;
 using RestaurantAPI.Services;
+using RestaurantAPI.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ========== Configure JSON Settings ==========
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-    options.JsonSerializerOptions.WriteIndented = true;
-});
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
 
 // ========== Configure Email Service ==========
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -26,7 +32,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -81,6 +87,18 @@ builder.Services.AddAuthorization();
 
 // ========== AutoMapper ==========
 builder.Services.AddAutoMapper(typeof(MapperProfile));
+
+// ========== Cloudinary Settings and Upload Service ==========
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddSingleton(sp =>
+{
+    var config = sp.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+    var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
+    return new Cloudinary(account);
+});
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
+
 
 // ========== Swagger Configuration ==========
 builder.Services.AddEndpointsApiExplorer();

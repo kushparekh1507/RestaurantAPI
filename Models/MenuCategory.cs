@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace RestaurantAPI.Models
 {
@@ -12,6 +13,9 @@ namespace RestaurantAPI.Models
         [Required]
         public string CategoryName { get; set; }
 
+        [Required]
+        public string Description {  get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [Required]
@@ -20,6 +24,7 @@ namespace RestaurantAPI.Models
         [ForeignKey("RestaurantId")]
         public Restaurant Restaurant { get; set; }
 
+        
         public IEnumerable<MenuItem> MenuItems { get; set; } = new List<MenuItem>();
     }
 }

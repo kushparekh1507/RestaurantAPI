@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantAPI.DTO;
 using RestaurantAPI.Models;
+using RestaurantAPI.Services.Interfaces;
 
 namespace RestaurantAPI.Controllers
 {
@@ -18,12 +19,14 @@ namespace RestaurantAPI.Controllers
         private readonly RestaurantContext _context;
         private readonly IMapper _mapper;
         IConfiguration _configuration;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public MenuItemsController(RestaurantContext context, IMapper mapper,IConfiguration configuration)
+        public MenuItemsController(RestaurantContext context, IMapper mapper, IConfiguration configuration, ICloudinaryService cloudinaryService)
         {
             _context = context;
             _mapper = mapper;
             _configuration = configuration;
+            _cloudinaryService = cloudinaryService;
         }
 
         // GET: api/MenuItems
@@ -47,26 +50,57 @@ namespace RestaurantAPI.Controllers
             return menuItem;
         }
 
+        [HttpGet("restaurant/{id}")]
+        public async Task<ActionResult<IEnumerable<MenuItem>>> GetMenuItemsByRestaurant(int id)
+        {
+            var items = await _context.MenuItem
+                .Include(m => m.MenuCategory)
+                .Where(m => m.MenuCategory.RestaurantId == id)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                success = true,
+                items
+            });
+        }
+
         // PUT: api/MenuItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMenuItem(int id, MenuItemRequest menuItem)
+        public async Task<IActionResult> PutMenuItem(int id, [FromForm] MenuItemRequest request, IFormFile? imageFile)
         {
-            if (id != menuItem.MenuItemId)
+            Console.WriteLine("Id:" + id);
+            Console.WriteLine("Id:" + request.MenuItemId);
+
+            if (id != request.MenuItemId)
             {
                 return BadRequest();
             }
 
-            var newItem=await _context.MenuItem.FindAsync(menuItem.MenuItemId);
+            MenuItem newItem = await _context.MenuItem.FindAsync(id);
 
             if (newItem == null)
             {
                 return NotFound();
             }
+            string imageUrl = newItem.ImageUrl;
+
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var uploadResult = await _cloudinaryService.UploadImageAsync(imageFile, "menu_items");
+                imageUrl = uploadResult.SecureUrl.ToString();
+            }
+
+            newItem.ItemName = request.ItemName;
+            newItem.Description = request.Description;
+            newItem.MenuCategoryId = request.MenuCategoryId;
+            newItem.Price = request.Price;
+            newItem.ImageUrl = imageUrl;
 
             try
             {
-                _mapper.Map(menuItem, newItem);
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -87,22 +121,38 @@ namespace RestaurantAPI.Controllers
         // POST: api/MenuItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MenuItem>> PostMenuItem(MenuItemRequest request)
+        public async Task<ActionResult<MenuItem>> PostMenuItem([FromForm] MenuItemRequest request, IFormFile imageFile)
         {
             try
             {
-                var newItem = _mapper.Map<MenuItemRequest, MenuItem>(request);
+                string imageUrl = null;
+
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var uploadResult = await _cloudinaryService.UploadImageAsync(imageFile, "menu_items");
+                    imageUrl = uploadResult.SecureUrl.ToString();
+                }
+
+                MenuItem newItem = new MenuItem
+                {
+                    ItemName = request.ItemName,
+                    Description = request.Description,
+                    Price = request.Price,
+                    ImageUrl = imageUrl, // fallback if frontend sends URL directly
+                    MenuCategoryId = request.MenuCategoryId
+                };
+
                 _context.MenuItem.Add(newItem);
                 await _context.SaveChangesAsync();
+
                 return CreatedAtAction("GetMenuItem", new { id = newItem.MenuItemId }, newItem);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(new { message = ex.Message });
             }
-
-            
         }
+
 
         // DELETE: api/MenuItems/5
         [HttpDelete("{id}")]

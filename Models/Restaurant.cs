@@ -20,6 +20,9 @@ namespace RestaurantAPI.Models
 
         public int Status { get; set; } = 1;
 
+        [MaxLength(15)]
+        public string MobileNo { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<Table> Tables { get; set; } = new List<Table>();

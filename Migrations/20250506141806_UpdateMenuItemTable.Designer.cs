@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RestaurantAPI.Models;
 
@@ -11,9 +12,11 @@ using RestaurantAPI.Models;
 namespace RestaurantAPI.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    partial class RestaurantContextModelSnapshot : ModelSnapshot
+    [Migration("20250506141806_UpdateMenuItemTable")]
+    partial class UpdateMenuItemTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,11 +177,6 @@ namespace RestaurantAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("MobileNo")
-                        .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -270,11 +268,6 @@ namespace RestaurantAPI.Migrations
                     b.Property<bool>("IsFirstLogin")
                         .HasColumnType("bit");
 
-                    b.Property<string>("MobileNo")
-                        .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
-
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -306,7 +299,6 @@ namespace RestaurantAPI.Migrations
                             Email = "kushparekh943@gmail.com",
                             FullName = "Super Admin",
                             IsFirstLogin = false,
-                            MobileNo = "7359292907",
                             Password = "$2a$11$OZsGF7lj/fx2uKwVlDKUCu6yugoftyY0FaSbLD8gIrH0DHrzonZ5q",
                             RoleId = 1,
                             Status = 0

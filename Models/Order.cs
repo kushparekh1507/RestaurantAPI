@@ -30,7 +30,6 @@ namespace RestaurantAPI.Models
         [ForeignKey("CustomerUserId")]
         public User? CustomerUser { get; set; }
 
-        [JsonIgnore]
         public IEnumerable<OrderItem> OrderItems { get; set; }=new List<OrderItem>();
     }
 }

@@ -11,8 +11,6 @@ namespace RestaurantAPI
             CreateMap<RestaurantRequest, Restaurant>();
 
             CreateMap<MenuCategoryRequest, MenuCategory>();
-
-            CreateMap<MenuItemRequest, MenuItem>();
         }
     }
 }

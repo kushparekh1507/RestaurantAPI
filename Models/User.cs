@@ -35,5 +35,9 @@ namespace RestaurantAPI.Models
         public Restaurant? Restaurant { get; set; }
 
         public IEnumerable<Order> Orders { get; set; } = new List<Order>();
+
+        // ✅ New field for mobile number
+        [MaxLength(15)]
+        public string MobileNo { get; set; }
     }
 }

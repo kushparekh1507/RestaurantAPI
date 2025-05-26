@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using RestaurantAPI.DTO;
+using RestaurantAPI.Helpers;
 using RestaurantAPI.Models;
 using RestaurantAPI.Services;
 
@@ -36,10 +37,83 @@ namespace RestaurantAPI.Controllers
             return "value";
         }
 
-        // POST api/<UsersController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpGet("role/{rid}")]
+        public async Task<ActionResult<User>> GetUsersByRole(int rid)
         {
+            var users = await _context.Users.Where(u => u.RoleId == rid).ToListAsync();
+
+            return Ok(users);
+        }
+
+        [HttpGet("Restaurant/{rid}")]
+        public async Task<ActionResult> GetCustomerUserOfRestaurant(int rid)
+        {
+            var users = await _context.Users.Where(us => us.RestaurantId == rid && us.UserType != null).ToListAsync();
+
+            return Ok(new
+            {
+                users
+            });
+        }
+
+        // POST api/<UsersController>
+        [HttpPost("CustomerAdmin/CreateUser")]
+        public async Task<ActionResult> Post([FromBody] CustomerUserRequest request)
+        {
+            string randomPassword = PasswordGenerator.generateRandomPassword();
+
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(randomPassword);
+
+            User u = new User
+            {
+                Email = request.Email,
+                Password = hashedPassword,
+                FullName = request.FullName,
+                UserType = request.UserType,
+                Status = 1,
+                RoleId = 3,
+                RestaurantId = request.RestaurantId,
+                MobileNo = request.MobileNo
+            };
+
+            _context.Users.Add(u);
+            await _context.SaveChangesAsync();
+
+            string recipientEmail = u.Email;
+
+            string subject = "Your Customer User Account is Ready";
+
+            string htmlBody = $@"
+                        <div style='font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;'>
+                            <h2 style='color: #333; text-align: center;'>Welcome to Restaurant Management</h2>
+                            <p style='font-size: 16px; color: #555;'>Hello,</p>
+                            <p style='font-size: 16px; color: #555;'>
+                                Your customer user account has been created. Below are your login credentials:
+                            </p>
+                            <div style='background-color: #fff; padding: 15px; border-radius: 5px; border: 1px solid #ccc;'>
+                                <p style='font-size: 16px;'><strong>Email:</strong> {u.Email}</p>
+                                <p style='font-size: 16px;'><strong>Password:</strong> {randomPassword}</p>
+                            </div>
+                            <p style='font-size: 16px; color: #555;'>
+                                Please log in and change your password immediately for security reasons.
+                            </p>
+                            <p style='text-align: center; margin-top: 20px;'>
+                                <a href='https://yourwebsite.com/login' style='background-color: #007bff; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-size: 16px;'>Login Now</a>
+                            </p>
+                            <p style='font-size: 16px; color: #555;'><strong>Best regards,</strong><br>Restaurant Management Team</p>
+                        </div>";
+
+            if (!string.IsNullOrEmpty(subject) && !string.IsNullOrEmpty(htmlBody))
+            {
+                await _emailService.SendEmailAsync(recipientEmail, subject, htmlBody);
+            }
+
+
+            return Ok(new
+            {
+                Success = true,
+                user = u
+            });
         }
 
         // PUT api/<UsersController>/5
@@ -92,8 +166,43 @@ namespace RestaurantAPI.Controllers
 
         // DELETE api/<UsersController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            // Optional: You can use a soft delete by updating a status flag instead
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            // Send email
+            string subject = "Account Deleted - Restaurant Management System";
+            string body = $@"
+            Dear {user.FullName},
+
+            Your account associated with this email ({user.Email}) has been deleted from our restaurant management system.
+
+            If you believe this is a mistake or have any questions, please contact our support team.
+
+            Best regards,
+            The Restaurant Team";
+
+            try
+            {
+                await _emailService.SendEmailAsync(user.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                // Optional: log email failure, but don't block deletion
+                Console.WriteLine("Email sending failed: " + ex.Message);
+            }
+
+            return Ok(new { message = "User deleted and email sent." });
         }
+
     }
 }

@@ -42,6 +42,22 @@ namespace RestaurantAPI.Controllers
             return table;
         }
 
+        [HttpGet("restaurant/{rid}")]
+        public async Task<ActionResult<IEnumerable<Table>>> GetTablesByRestaurant(int rid)
+        {
+            var tables = await _context.Tables
+                .Include(t => t.Restaurant)
+                .Where(t => t.RestaurantId == rid)
+                .ToListAsync();
+
+
+            return Ok(new
+            {
+                success = true,
+                tables
+            });
+        }
+
         // PUT: api/Tables/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         // PUT: api/Tables/5

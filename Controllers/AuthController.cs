@@ -100,6 +100,7 @@ namespace RestaurantAPI.Controllers
                     IsFirstLogin = u.IsFirstLogin,
                     Role = u.Role.RoleName,
                     RestaurantId = u.RestaurantId,
+                    UserType = u?.UserType
                 };
 
                 return Ok(res);
