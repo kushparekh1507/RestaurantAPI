@@ -56,12 +56,78 @@ namespace RestaurantAPI.Controllers
             var items = await _context.MenuItem
                 .Include(m => m.MenuCategory)
                 .Where(m => m.MenuCategory.RestaurantId == id)
+                .Select(m => new
+                {
+                    m.MenuItemId,
+                    m.ItemName,
+                    m.Description,
+                    m.Price,
+                    m.ImageUrl,
+                    MenuCategoryName = m.MenuCategory.CategoryName,
+                    m.MenuCategoryId,
+                    m.MenuCategory.MenuId,
+                    m.CreatedAt
+                })
                 .ToListAsync();
 
             return Ok(new
             {
                 success = true,
                 items
+            });
+        }
+
+        [HttpGet("waiter/{waiterId}")]
+        public async Task<ActionResult> GetItemsByWaiter(int waiterId)
+        {
+            var wm = await _context.WaiterMenus
+                .Include(w => w.Menu)
+                .Include(m => m.Waiter)
+                .FirstOrDefaultAsync(w => w.WaiterId == waiterId);
+
+            if (wm == null)
+                return BadRequest("No menu is assigned to this waiter");
+
+            var menuId = wm.MenuId;
+
+            var categories=await _context.MenuCategories
+                .Where(c => c.MenuId == menuId)
+                .Select(c => new
+                {
+                    c.MenuCategoryId,
+                    c.CategoryName,
+                    c.Description,
+                    Items = c.MenuItems.Select(mi => new
+                    {
+                        mi.MenuItemId,
+                        mi.ItemName,
+                        mi.Description,
+                        mi.Price,
+                        mi.ImageUrl
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            var items = await _context.MenuItem
+                .Include(m => m.MenuCategory)
+                .Where(m => m.MenuCategory.MenuId == menuId)
+                .Select(m => new
+                {
+                    m.MenuItemId,
+                    m.ItemName,
+                    m.Description,
+                    m.Price,
+                    m.ImageUrl,
+                    MenuCategoryName = m.MenuCategory.CategoryName,
+                    m.MenuCategoryId
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                success = true,
+                items,
+                categories
             });
         }
 

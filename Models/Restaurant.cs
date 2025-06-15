@@ -29,6 +29,10 @@ namespace RestaurantAPI.Models
 
         public IEnumerable<MenuCategory> MenuCategories { get; set; } = new List<MenuCategory>();
 
+        public IEnumerable<Menu> Menus { get; set; } = new List<Menu>();
+
         public IEnumerable<User> Users { get; set; } = new List<User>();
+
+        public IEnumerable<Order> Orders { get; set; }=new List<Order>();
     }
 }

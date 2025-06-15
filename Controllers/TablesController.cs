@@ -47,7 +47,19 @@ namespace RestaurantAPI.Controllers
         {
             var tables = await _context.Tables
                 .Include(t => t.Restaurant)
+                .Include(t => t.TableType)
                 .Where(t => t.RestaurantId == rid)
+                .Select(t => new
+                {
+                    t.TableId,
+                    t.TableNumber,
+                    t.Capacity,
+                    t.RestaurantId,
+                    t.TableTypeId,
+                    TableTypeName = t.TableType.TypeName,
+                    CreatedAt = t.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    t.HasActiveOrder
+                })
                 .ToListAsync();
 
 
@@ -56,6 +68,65 @@ namespace RestaurantAPI.Controllers
                 success = true,
                 tables
             });
+        }
+
+        [HttpGet("restaurant/hasOrder/{rid}")]
+        public async Task<ActionResult<IEnumerable<Table>>> GetOrdersTablesByRestaurant(int rid)
+        {
+            var tables = await _context.Tables
+                .Include(t => t.Restaurant)
+                .Include(t => t.TableType)
+                .Where(t => t.RestaurantId == rid && t.HasActiveOrder == true)
+                .Select(t => new
+                {
+                    t.TableId,
+                    t.TableNumber,
+                    t.Capacity,
+                    t.RestaurantId,
+                    t.TableTypeId,
+                    TableTypeName = t.TableType.TypeName,
+                    CreatedAt = t.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    t.HasActiveOrder
+                })
+                .ToListAsync();
+
+
+            return Ok(new
+            {
+                success = true,
+                tables
+            });
+        }
+
+        [HttpGet("waiter/{waiterId}")]
+        public async Task<ActionResult<IEnumerable<Table>>> GetTablesByWaiter(int waiterId)
+        {
+            var waiterMenu = await _context.WaiterMenus
+                .Include(wm => wm.Menu)
+                .FirstOrDefaultAsync(wm => wm.WaiterId == waiterId);
+
+            if (waiterMenu == null)
+                return NotFound(new { message = "No menu assigned to this waiter." });
+
+            var tableTypeId = waiterMenu.Menu.TableTypeId;
+
+            var tables = await _context.Tables
+                .Where(t => t.TableTypeId == tableTypeId)
+                .Select(t => new
+                {
+                    t.TableId,
+                    t.TableNumber,
+                    t.Capacity,
+                    t.RestaurantId,
+                    t.TableTypeId,
+                    TableTypeName = t.TableType.TypeName,
+                    RestaurantName = t.Restaurant.Name,
+                    CreatedAt = t.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    t.HasActiveOrder
+                })
+                .ToListAsync();
+
+            return Ok(new { tables });
         }
 
         // PUT: api/Tables/5
@@ -78,6 +149,7 @@ namespace RestaurantAPI.Controllers
             existingTable.TableNumber = request.TableNumber;
             existingTable.Capacity = request.Capacity;
             existingTable.RestaurantId = request.RestaurantId;
+            existingTable.TableTypeId = request.TableTypeId;
 
             try
             {
@@ -104,11 +176,17 @@ namespace RestaurantAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Table>> PostTable(TableRequest request)
         {
+            Table t = await _context.Tables.FirstOrDefaultAsync(ta => ta.TableNumber == request.TableNumber && ta.TableTypeId == request.TableTypeId);
+            if (t != null)
+                return BadRequest("Table Number already exists");
+
             Table table = new Table
             {
                 TableNumber = request.TableNumber,
                 Capacity = request.Capacity,
-                RestaurantId = request.RestaurantId
+                RestaurantId = request.RestaurantId,
+                TableTypeId = request.TableTypeId,
+                HasActiveOrder = false,
             };
             _context.Tables.Add(table);
             await _context.SaveChangesAsync();

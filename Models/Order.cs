@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using RestaurantAPI.ENUM;
 
 namespace RestaurantAPI.Models
 {
@@ -11,7 +12,7 @@ namespace RestaurantAPI.Models
         public int OrderId { get; set; }
 
         [Required]
-        public string Status { get; set; } = "Pending";
+        public OrderStatus Status { get; set; } = OrderStatus.pending;
 
         [Required]
         public double TotalAmount { get; set; }
@@ -24,12 +25,18 @@ namespace RestaurantAPI.Models
         [Required]
         public int? CustomerUserId { get; set; }
 
+        [Required]
+        public int RestaurantId { get; set; }
+
         [ForeignKey("TableId")]
         public Table Table { get; set; }
 
         [ForeignKey("CustomerUserId")]
         public User? CustomerUser { get; set; }
 
-        public IEnumerable<OrderItem> OrderItems { get; set; }=new List<OrderItem>();
+        [ForeignKey("RestaurantId")]
+        public Restaurant Restaurant { get; set; }
+
+        public IEnumerable<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 }

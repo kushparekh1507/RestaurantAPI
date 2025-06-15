@@ -40,6 +40,26 @@ namespace RestaurantAPI.Controllers
             return await _context.Restaurant.ToListAsync();
         }
 
+        [HttpGet("stats")]
+        public async Task<ActionResult> GetRestaurantStats()
+        {
+            var total = await _context.Restaurant.Where(r => r.Status != (int)RestaurantStatus.Rejected).CountAsync();
+            var active = await _context.Restaurant.Where(r => r.Status == (int)RestaurantStatus.Active).CountAsync();
+            var pending = await _context.Restaurant.Where(r => r.Status == (int)RestaurantStatus.Pending).CountAsync();
+
+            return Ok(new { success = true, total, active, pending });
+        }
+
+        [HttpGet("stats/{id}")]
+        public async Task<ActionResult> GetParticularRestaurantStats(int id)
+        {
+            var totalorders = await _context.Order
+                .Where(o => o.RestaurantId == id).CountAsync();
+            var totalusers = await _context.Users.Where(u => u.RestaurantId == id && u.RoleId == 3).CountAsync();
+
+            return Ok(new { success = true,totalorders,totalusers });
+        }
+
         // GET: api/Restaurants/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Restaurant>> GetRestaurant(int id)

@@ -19,6 +19,12 @@ namespace RestaurantAPI.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [Required]
+        public int MenuId { get; set; }
+
+        [ForeignKey("MenuId")]
+        public Menu Menu { get; set; }
+
+        [Required]
         public int RestaurantId {  get; set; }
 
         [ForeignKey("RestaurantId")]

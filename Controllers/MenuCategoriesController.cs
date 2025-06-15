@@ -30,21 +30,71 @@ namespace RestaurantAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MenuCategory>>> GetMenuCategories()
         {
-            return await _context.MenuCategories.Include(m=>m.Restaurant).Include(m=>m.MenuItems).ToListAsync();
+            var categories = await _context.MenuCategories
+                .Include(m => m.Restaurant)
+                .Include(m => m.MenuItems)
+                .Include(m => m.Menu)
+                .ThenInclude(m => m.TableType)
+                .Select(m => new
+                {
+                    m.MenuCategoryId,
+                    m.CategoryName,
+                    m.Description,
+                    m.RestaurantId,
+                    RestaurantName = m.Restaurant.Name,
+                    m.MenuId,
+                    MenuName = m.Menu.MenuName,
+                    m.CreatedAt,
+                    MenuItems = m.MenuItems.Select(mi => new
+                    {
+                        mi.MenuItemId,
+                        mi.ItemName,
+                        mi.Price,
+                        mi.Description,
+                        mi.ImageUrl
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(new { success = true, categories });
         }
 
         // GET: api/MenuCategories/5
         [HttpGet("{id}")]
         public async Task<ActionResult<MenuCategory>> GetMenuCategory(int id)
         {
-            var menuCategory = await _context.MenuCategories.Include(r => r.Restaurant).FirstOrDefaultAsync(r => r.MenuCategoryId == id);
+            var menuCategory = await _context.MenuCategories
+                .Include(m => m.Restaurant)
+                .Include(m => m.MenuItems)
+                .Include(m => m.Menu)
+                .ThenInclude(m => m.TableType)
+                .Select(m => new
+                {
+                    m.MenuCategoryId,
+                    m.CategoryName,
+                    m.Description,
+                    m.RestaurantId,
+                    RestaurantName = m.Restaurant.Name,
+                    m.MenuId,
+                    MenuName = m.Menu.MenuName,
+                    m.CreatedAt,
+                    MenuItems = m.MenuItems.Select(mi => new
+                    {
+                        mi.MenuItemId,
+                        mi.ItemName,
+                        mi.Price,
+                        mi.Description,
+                        mi.ImageUrl
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync(m => m.MenuCategoryId == id);
 
             if (menuCategory == null)
             {
                 return NotFound();
             }
 
-            return menuCategory;
+            return Ok(new { success = true, menuCategory });
         }
 
         [HttpGet("restaurant/{rid}")]
@@ -56,9 +106,34 @@ namespace RestaurantAPI.Controllers
             //    return NotFound();
             //}
 
-            var categories = await _context.MenuCategories.Where(m => m.RestaurantId == rid).ToListAsync();
+            var categories = await _context.MenuCategories
+                .Include(m => m.Restaurant)
+                .Include(m => m.MenuItems)
+                .Include(m => m.Menu)
+                .ThenInclude(m => m.TableType)
+                .Select(m => new
+                {
+                    m.MenuCategoryId,
+                    m.CategoryName,
+                    m.Description,
+                    m.RestaurantId,
+                    RestaurantName = m.Restaurant.Name,
+                    m.MenuId,
+                    MenuName = m.Menu.MenuName,
+                    m.CreatedAt,
+                    MenuItems = m.MenuItems.Select(mi => new
+                    {
+                        mi.MenuItemId,
+                        mi.ItemName,
+                        mi.Price,
+                        mi.Description,
+                        mi.ImageUrl
+                    }).ToList()
+                })
+                .Where(m => m.RestaurantId == rid)
+                .ToListAsync();
 
-            return categories;
+            return Ok(new { success = true, categories });
         }
 
         // PUT: api/MenuCategories/5
@@ -81,6 +156,7 @@ namespace RestaurantAPI.Controllers
             existingMenu.CategoryName = updatedMenu.CategoryName;
             existingMenu.Description = updatedMenu.Description;
             existingMenu.RestaurantId = updatedMenu.RestaurantId;
+            existingMenu.MenuId = updatedMenu.MenuId;
 
             try
             {
@@ -112,7 +188,8 @@ namespace RestaurantAPI.Controllers
                 {
                     CategoryName = request.CategoryName,
                     Description = request.Description,
-                    RestaurantId = request.RestaurantId
+                    RestaurantId = request.RestaurantId,
+                    MenuId = request.MenuId
                 };
 
                 _context.MenuCategories.Add(newCat);

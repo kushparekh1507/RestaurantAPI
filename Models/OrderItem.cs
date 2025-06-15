@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using RestaurantAPI.ENUM;
 
 namespace RestaurantAPI.Models
 {
@@ -7,10 +8,10 @@ namespace RestaurantAPI.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int OrderItemId {  get; set; }
+        public int OrderItemId { get; set; }
 
         [Required]
-        public int Quantity {  get; set; }
+        public int Quantity { get; set; }
 
         [Required]
         public double Price { get; set; }
@@ -19,16 +20,16 @@ namespace RestaurantAPI.Models
         public double TotalPrice { get; set; }
 
         [Required]
-        public string Status {  get; set; }
+        public OrderItemStatus Status { get; set; } = OrderItemStatus.pending;
 
         [Required]
         public int OrderId { get; set; }
 
         [Required]
-        public int? ItemId {  get; set; }
+        public int? ItemId { get; set; }
 
         [ForeignKey("OrderId")]
-        public Order Order {  get; set; }
+        public Order Order { get; set; }
 
         [ForeignKey("ItemId")]
         public MenuItem? MenuItem { get; set; }

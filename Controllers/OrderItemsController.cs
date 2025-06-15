@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RestaurantAPI.ENUM;
 using RestaurantAPI.Models;
 
 namespace RestaurantAPI.Controllers
@@ -40,6 +41,36 @@ namespace RestaurantAPI.Controllers
 
             return orderItem;
         }
+
+        [HttpPatch("status/{oid}/{itemId}")]
+        public async Task<ActionResult> ChangeOrderItemStatus(int oid, int itemId)
+        {
+            var orderItem = await _context.OrderItem
+                .FirstOrDefaultAsync(oi => oi.OrderId == oid && oi.OrderItemId == itemId);
+
+            if (orderItem == null)
+                return BadRequest("Order and order item not found.");
+
+            if (orderItem.Status == OrderItemStatus.pending)
+                orderItem.Status = OrderItemStatus.readyToServe;
+            else if (orderItem.Status == OrderItemStatus.readyToServe)
+                orderItem.Status = OrderItemStatus.served;
+            else
+                return BadRequest("Order item is already served.");
+
+            // Save safely
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+            return Ok(new { success = true });
+        }
+
 
         // PUT: api/OrderItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754

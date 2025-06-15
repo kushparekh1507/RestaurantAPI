@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RestaurantAPI.Models;
 
@@ -11,9 +12,11 @@ using RestaurantAPI.Models;
 namespace RestaurantAPI.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    partial class RestaurantContextModelSnapshot : ModelSnapshot
+    [Migration("20250607062252_AddWaiterMenuTableAndUpdateTablesTable")]
+    partial class AddWaiterMenuTableAndUpdateTablesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,11 +136,9 @@ namespace RestaurantAPI.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("RestaurantId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TableId")
                         .HasColumnType("int");
@@ -148,8 +149,6 @@ namespace RestaurantAPI.Migrations
                     b.HasKey("OrderId");
 
                     b.HasIndex("CustomerUserId");
-
-                    b.HasIndex("RestaurantId");
 
                     b.HasIndex("TableId");
 
@@ -176,8 +175,9 @@ namespace RestaurantAPI.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float");
@@ -455,12 +455,6 @@ namespace RestaurantAPI.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("RestaurantAPI.Models.Restaurant", "Restaurant")
-                        .WithMany("Orders")
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("RestaurantAPI.Models.Table", "Table")
                         .WithMany("Orders")
                         .HasForeignKey("TableId")
@@ -468,8 +462,6 @@ namespace RestaurantAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("CustomerUser");
-
-                    b.Navigation("Restaurant");
 
                     b.Navigation("Table");
                 });
@@ -576,8 +568,6 @@ namespace RestaurantAPI.Migrations
                     b.Navigation("MenuCategories");
 
                     b.Navigation("Menus");
-
-                    b.Navigation("Orders");
 
                     b.Navigation("Tables");
 

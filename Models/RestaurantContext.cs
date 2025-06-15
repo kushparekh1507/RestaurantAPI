@@ -14,6 +14,9 @@ namespace RestaurantAPI.Models
         public virtual DbSet<Role> Roles { get; set; }
 
         public virtual DbSet<Table> Tables { get; set; }
+        public virtual DbSet<TableType> TableTypes { get; set; }
+
+        public virtual DbSet<Menu> Menus { get; set; }
 
         public virtual DbSet<MenuCategory> MenuCategories { get; set; }
 
@@ -21,9 +24,10 @@ namespace RestaurantAPI.Models
 
         public virtual DbSet<User> Users { get; set; }
 
-        public DbSet<RestaurantAPI.Models.Order> Order { get; set; } = default!;
-        public DbSet<RestaurantAPI.Models.OrderItem> OrderItem { get; set; } = default!;
+        public DbSet<Order> Order { get; set; } = default!;
+        public DbSet<OrderItem> OrderItem { get; set; } = default!;
 
+        public DbSet<WaiterMenu> WaiterMenus { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,11 +37,29 @@ namespace RestaurantAPI.Models
                 .HasForeignKey(t => t.RestaurantId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Table>()
+                .HasOne(t => t.TableType)
+                .WithMany(t => t.Tables)
+                .HasForeignKey(t => t.TableTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TableType>()
+                .HasOne(t => t.Menu)
+                .WithOne(m => m.TableType)
+                .HasForeignKey<Menu>(m => m.TableTypeId);
+
             modelBuilder.Entity<MenuCategory>()
                 .HasOne(m => m.Restaurant)
                 .WithMany(a => a.MenuCategories)
                 .HasForeignKey(m => m.RestaurantId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<MenuCategory>()
+                .HasOne(mc => mc.Menu)
+                .WithMany(m => m.Categories)
+                .HasForeignKey(mc => mc.MenuId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             modelBuilder.Entity<MenuItem>()
                 .HasOne(m => m.MenuCategory)
@@ -69,6 +91,12 @@ namespace RestaurantAPI.Models
                 .HasForeignKey(a => a.CustomerUserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Order>()
+                .HasOne(o=>o.Restaurant)
+                .WithMany(o=>o.Orders)
+                .HasForeignKey(o=>o.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             modelBuilder.Entity<OrderItem>()
                 .HasOne(a => a.Order)
                 .WithMany(o => o.OrderItems)
@@ -80,6 +108,23 @@ namespace RestaurantAPI.Models
                 .WithMany(o => o.OrderItems)
                 .HasForeignKey(a => a.ItemId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<WaiterMenu>()
+                .HasIndex(wm => wm.WaiterId)
+                .IsUnique(); // Enforce one waiter can have only one menu
+
+            modelBuilder.Entity<WaiterMenu>()
+                .HasOne(wm => wm.Waiter)
+                .WithOne(u => u.WaiterMenu)
+                .HasForeignKey<WaiterMenu>(wm => wm.WaiterId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<WaiterMenu>()
+                .HasOne(wm => wm.Menu)
+                .WithMany(m => m.WaiterMenus)
+                .HasForeignKey(wm => wm.MenuId)
+                .OnDelete(DeleteBehavior.NoAction);
+
 
             modelBuilder.Entity<Role>().HasData(
                     new Role { RoleId = 1, RoleName = "SuperAdmin" },
@@ -98,11 +143,17 @@ namespace RestaurantAPI.Models
                         Password = hashedPassword,
                         IsFirstLogin = false,
                         RoleId = 1,
-                        MobileNo= "7359292907"
+                        MobileNo = "7359292907"
                     }
                 );
 
         }
-        
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.EnableSensitiveDataLogging();
+        }
+
+
     }
 }

@@ -8,6 +8,8 @@
 
         public int? CustomerUserId { get; set; }
 
+        public int RestaurantId { get; set; }
+
         public List<OrderItemRequest> Items { get; set; }
     }
 }

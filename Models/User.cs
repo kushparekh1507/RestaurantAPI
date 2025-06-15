@@ -39,5 +39,8 @@ namespace RestaurantAPI.Models
         // ✅ New field for mobile number
         [MaxLength(15)]
         public string MobileNo { get; set; }
+
+
+        public WaiterMenu? WaiterMenu { get; set; } 
     }
 }
