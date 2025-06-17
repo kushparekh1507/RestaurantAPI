@@ -92,9 +92,9 @@ namespace RestaurantAPI.Models
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Order>()
-                .HasOne(o=>o.Restaurant)
-                .WithMany(o=>o.Orders)
-                .HasForeignKey(o=>o.RestaurantId)
+                .HasOne(o => o.Restaurant)
+                .WithMany(o => o.Orders)
+                .HasForeignKey(o => o.RestaurantId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<OrderItem>()
@@ -143,7 +143,8 @@ namespace RestaurantAPI.Models
                         Password = hashedPassword,
                         IsFirstLogin = false,
                         RoleId = 1,
-                        MobileNo = "7359292907"
+                        MobileNo = "7359292907",
+                        Status = 1,
                     }
                 );
 

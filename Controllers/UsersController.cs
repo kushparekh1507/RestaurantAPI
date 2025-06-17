@@ -99,6 +99,14 @@ namespace RestaurantAPI.Controllers
         [HttpPost("CustomerAdmin/CreateUser")]
         public async Task<ActionResult> Post([FromBody] CustomerUserRequest request)
         {
+            Restaurant r = await _context.Restaurant.FirstOrDefaultAsync(re => re.Email == request.Email);
+            User us = await _context.Users.FirstOrDefaultAsync(us => us.Email == request.Email);
+
+
+            if (r != null || us != null)
+            {
+                return BadRequest("Email already exists");
+            }
             string randomPassword = PasswordGenerator.generateRandomPassword();
 
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(randomPassword);
@@ -153,6 +161,29 @@ namespace RestaurantAPI.Controllers
                 Success = true,
                 user = u
             });
+        }
+
+        [HttpPut("change-status/{uid}/status/{st}")]
+        public async Task<ActionResult> ChangeStatusOfUser(int uid, int st)
+        {
+            User u = await _context.Users.FindAsync(uid);
+
+            if (u.RoleId == 3)
+            {
+                u.Status = st;
+            }
+            else
+            {
+                Restaurant r = await _context.Restaurant.Include(re => re.Users).FirstOrDefaultAsync(re => re.RestaurantId == u.RestaurantId);
+
+                foreach (var us in r.Users)
+                {
+                    us.Status = st;
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
         }
 
         // PUT api/<UsersController>/5

@@ -57,7 +57,7 @@ namespace RestaurantAPI.Controllers
                 .Where(o => o.RestaurantId == id).CountAsync();
             var totalusers = await _context.Users.Where(u => u.RestaurantId == id && u.RoleId == 3).CountAsync();
 
-            return Ok(new { success = true,totalorders,totalusers });
+            return Ok(new { success = true, totalorders, totalusers });
         }
 
         // GET: api/Restaurants/5
@@ -120,6 +120,14 @@ namespace RestaurantAPI.Controllers
         {
             try
             {
+                Restaurant r = await _context.Restaurant.FirstOrDefaultAsync(re => re.Email == request.Email);
+                User u = await _context.Users.FirstOrDefaultAsync(us => us.Email == request.Email);
+
+
+                if (r != null || u != null)
+                {
+                    return BadRequest("Email already exists");
+                }
                 var newRes = _mapper.Map<RestaurantRequest, Restaurant>(request);
                 _context.Restaurant.Add(newRes);
                 await _context.SaveChangesAsync();
@@ -131,6 +139,32 @@ namespace RestaurantAPI.Controllers
             {
                 return Problem(ex.Message);
             }
+        }
+
+        [HttpPut("change-status/{rid}/status/{st}")]
+        public async Task<ActionResult> ChangeRestaurantStatus(int rid, int st)
+        {
+            Restaurant r = await _context.Restaurant.Include(re => re.Users).FirstOrDefaultAsync(re => re.RestaurantId == rid);
+            RestaurantStatus rs = (RestaurantStatus)st;
+
+            r.Status = (int)rs;
+            if (rs == RestaurantStatus.Active)
+            {
+                foreach (var u in r.Users)
+                {
+                    u.Status = 1;
+                }
+            }
+            else
+            {
+                foreach (var u in r.Users)
+                {
+                    u.Status = 0;
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
         }
 
         // DELETE: api/Restaurants/5

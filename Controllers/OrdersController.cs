@@ -120,7 +120,49 @@ namespace RestaurantAPI.Controllers
                 .Include(o => o.Restaurant)
                 .Include(o => o.OrderItems)
                 .ThenInclude(o => o.MenuItem)
-                .Where(o => o.RestaurantId == rid && o.Status == OrderStatus.pending)
+                .Where(o => o.RestaurantId == rid)
+                .Select(o => new
+                {
+                    o.OrderId,
+                    o.Status,
+                    o.TotalAmount,
+                    o.OrderDate,
+                    o.CustomerUserId,
+                    WaiterName = o.CustomerUser.FullName,
+                    o.TableId,
+                    o.Table.TableNumber,
+                    o.Table.TableType.TypeName,
+                    o.RestaurantId,
+                    RestaurantName = o.Restaurant.Name,
+                    OrderItems = o.OrderItems.Select(oi => new
+                    {
+                        oi.OrderItemId,
+                        oi.Quantity,
+                        oi.Price,
+                        oi.TotalPrice,
+                        oi.Status,
+                        oi.ItemId,
+                        oi.MenuItem.ItemName,
+                        oi.MenuItem.ImageUrl
+                    })
+                })
+                .ToListAsync();
+
+
+            return Ok(new { success = true, orders });
+        }
+
+        [HttpGet("restaurant/{rid}/status/{st}")]
+        public async Task<ActionResult> GetAllOrdersOfRestaurantBySTatus(int rid, int st)
+        {
+            var orders = await _context.Order
+                .Include(o => o.CustomerUser)
+                .Include(o => o.Table)
+                .ThenInclude(o => o.TableType)
+                .Include(o => o.Restaurant)
+                .Include(o => o.OrderItems)
+                .ThenInclude(o => o.MenuItem)
+                .Where(o => o.RestaurantId == rid && (int)o.Status == st)
                 .Select(o => new
                 {
                     o.OrderId,
@@ -153,7 +195,7 @@ namespace RestaurantAPI.Controllers
         }
 
         [HttpPatch("UpdateStatus/{orderId}")]
-        public async Task<ActionResult> UpdateOrderStatus(int orderId,[FromBody] OrderStatus status)
+        public async Task<ActionResult> UpdateOrderStatus(int orderId, [FromBody] OrderStatus status)
         {
             var order = await _context.Order
                 .Include(o => o.OrderItems) // Include related order items

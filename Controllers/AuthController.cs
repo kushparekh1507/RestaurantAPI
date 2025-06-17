@@ -50,6 +50,11 @@ namespace RestaurantAPI.Controllers
                 return BadRequest("User role is not assigned.");
             }
 
+            if (user.Status == 0)
+            {
+                return BadRequest("Your account has been deactivated. please contact admin.");
+            }
+
             Console.WriteLine("User Role: " + user.Role.RoleName);
             Console.WriteLine("User is first login: " + user.IsFirstLogin);
 
